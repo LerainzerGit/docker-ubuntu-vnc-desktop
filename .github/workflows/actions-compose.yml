@@ -1,4 +1,4 @@
-name: NoVNC Linux Container (fcwu)
+name: NoVNC Linux Container (Fork)
 
 on:
   push:
@@ -6,35 +6,37 @@ on:
   workflow_dispatch:
 
 jobs:
-  run-fcwu-novnc:
+  build-and-run:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Start fcwu Ubuntu VNC Desktop Container
+      - name: Build Docker Image Locally
         run: |
-          # Pull and run the fcwu desktop container mapping port 6080
+          # Build the Docker image from the local Dockerfile in your forked repo
+          docker build -t local-ubuntu-vnc .
+
+      - name: Start Built Container
+        run: |
+          # Run your locally built container mapping port 6080
           docker run -d \
             --name novnc-container \
             -p 6080:6080 \
             -v /dev/shm:/dev/shm \
-            fcwu/docker-ubuntu-vnc-desktop:latest
+            local-ubuntu-vnc:latest
 
       - name: Create Local NoVNC HTML Page
         run: |
-          # Create directory for the webpage
           mkdir -p public_html
-          
-          # Generate the HTML landing page pointing to port 6080
           cat << 'EOF' > public_html/index.html
           <!DOCTYPE html>
           <html lang="en">
           <head>
               <meta charset="UTF-8">
               <meta name="viewport" content="width=device-width, initial-scale=1.0">
-              <title>NoVNC Container Access - fcwu</title>
+              <title>NoVNC Container Access</title>
               <style>
                   body { font-family: Arial, sans-serif; text-align: center; background-color: #f4f4f9; padding: 50px; }
                   .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); display: inline-block; }
@@ -44,8 +46,8 @@ jobs:
           </head>
           <body>
               <div class="card">
-                  <h2>fcwu Ubuntu VNC Desktop Gateway</h2>
-                  <p>The container environment is active.</p>
+                  <h2>Local Fork NoVNC Gateway</h2>
+                  <p>Your custom container environment is active.</p>
                   <a class="btn" href="http://localhost:6080" target="_blank">Open NoVNC Interface</a>
               </div>
           </body>
